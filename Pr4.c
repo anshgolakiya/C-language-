@@ -1,71 +1,73 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
-char keywords[][10] = {
-    "int", "float", "char", "if", "else",
-    "while", "for", "return", "void"
-};
-
-int isKeyword(char str[]) {
-    int i;
-    for (i = 0; i < 9; i++) {
-        if (strcmp(str, keywords[i]) == 0)
-            return 1;
-    }
-    return 0;
+char keyword[][10] = {"int","float","char","if","else","for","while","return"};
+int iskeyword(char str[]){
+	int i ;
+	for(i = 0 ; i < 8 ; i++){
+			if(strcmp(str,keyword[i]) == 0){
+				return 1 ;
+			}
+		}
+	return 0 ;	
 }
+int isOperator(char ch){
+	return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '<'|| ch == '>' | ch == '%' );
+}
+int isSpecialSymbol(char ch){
+	return (ch == ';' || ch == '(' || ch == ')' || ch == '{' || ch == '}'|| ch == '[' | ch == ']' ); 
+}
+int main(){
+	FILE* fp ;
+	char ch ;
+	char token[100] ;
+	int i ;
 
-int main() {
-    char input[200], token[50];
-    int i = 0, j;
-
-    printf("Enter a statement:\n");
-    fgets(input, sizeof(input), stdin);
-
-    while (input[i] != '\0') {
-
-        if (isspace(input[i])) {
-            i++;
-            continue;
-        }
-
-        if (isalpha(input[i])) {
-            j = 0;
-            while (isalnum(input[i])) {
-                token[j++] = input[i++];
-            }
-            token[j] = '\0';
-
-            if (isKeyword(token))
-                printf("%s --> Keyword\n", token);
-            else
-                printf("%s --> Identifier\n", token);
-        }
-
-        else if (isdigit(input[i])) {
-            j = 0;
-            while (isdigit(input[i])) {
-                token[j++] = input[i++];
-            }
-            token[j] = '\0';
-            printf("%s --> Number\n", token);
-        }
-
-        else if (strchr("+-*/=%", input[i])) {
-            printf("%c --> Operator\n", input[i]);
-            i++;
-        }
-
-        else if (strchr("();{},", input[i])) {
-            printf("%c --> Special Symbol\n", input[i]);
-            i++;
-        }
-
-        else {
-            i++;
-        }
-    }
-
-    return 0;
+	fp = fopen("input.txt","r");
+	
+	if(fp == NULL){
+		printf("file not found\n");
+		return 1 ;
+	}
+	
+	printf("Lexical Analyzer : ");
+	
+	while((ch = fgetc(fp)) != EOF){
+		if(isalpha(ch) || ch == ' '){
+		i = 0 ;
+		token[i++] = ch ;
+		while(ch = fgetc(fp) != EOF && (isalnum(ch) || ch == ' ')){
+			token[i++] = ch ;
+			token[i] = '\0' ;
+		if(iskeyword(token))
+			printf("%-20s : Keyword\n",token);
+		else
+			printf("%-20s : Identifier\n",token);
+			
+		}
+		
+		if(ch != EOF)
+			ungetc(ch,fp);
+		}
+		else if(isdigit(ch)){
+			i = 0 ;
+			token[i++] = ch ;
+			while((ch = fgetc(fp)) != EOF && (isdigit(ch))){
+				token[i++] = ch ;
+			}
+			token[i] ='\0' ;
+			printf("%-20s : Integer Constant\n",token);
+			if(ch = EOF)
+				ungetc(ch,fp);
+		}
+		else if(isOperator(ch)){
+			printf("%-20s : Operator\n",token);
+		}
+		else if(isSpecialSymbol(ch)){
+			printf("%-20s : Special Symbols\n",token);
+		}
+		
+	}
+	fclose(fp);
+	return 0 ;
 }
